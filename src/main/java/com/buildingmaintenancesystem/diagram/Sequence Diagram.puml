@@ -1,0 +1,73 @@
+@startuml
+title Full System Sequence Diagram - Building Maintenance ERP
+
+actor "Admin/Resident" as User
+participant "React Frontend" as UI
+participant "Spring Security / JWT" as Auth
+participant "Spring Boot Controller" as API
+participant "Service Layer" as Service
+participant "Database (MySQL)" as DB
+participant "System Scheduler" as Robot
+participant "External Libs (iText/POI)" as Libs
+
+== 1. Authentication & Setup ==
+User -> UI: Enter Credentials
+UI -> Auth: POST /login
+Auth -> DB: Validate User
+DB --> Auth: User Roles (ADMIN/USER)
+Auth --> UI: Return JWT Token
+UI -> UI: Store Token & UserID
+
+== 2. Admin: Flat & User Management ==
+User -> UI: Add Flat / Assign Resident
+UI -> API: PUT /api/flats/assign/{id}
+API -> Service: assignUserToFlat()
+Service -> DB: Update Flat Status & OwnerID
+DB --> UI: Success Response
+
+== 3. Billing Logic (Dual Path) ==
+alt #LightBlue Manual Generation (Admin)
+    User -> UI: Click "Generate Bills"
+    UI -> API: POST /api/finance/generate
+else #Lavender Auto-Billing (System)
+    Robot -> Service: @Scheduled (1st of Month)
+    Service -> DB: Check SystemSettings Toggle
+end
+Service -> DB: Fetch All Flats & Residents
+Service -> Service: Calculate Amount
+Service -> DB: Save MaintenanceBills (Status: PENDING)
+DB --> UI: Notification: "Bills Generated"
+
+== 4. Resident: Payment & Receipts ==
+User -> UI: View Bills -> Click "Pay Now"
+UI -> API: PUT /api/finance/bills/{id}/pay
+API -> Service: processPayment()
+Service -> DB: Update Status to "PAID"
+Service -> DB: Update Master Balance (Credit)
+DB --> UI: Payment Success
+User -> UI: Click "Download Receipt"
+UI -> API: GET /api/finance/bills/{id}/download
+API -> Libs: iText: generatePDF()
+Libs --> UI: Return PDF Blob
+UI -> User: Download Receipt.pdf
+
+== 5. Admin: Expenses & Transparency ==
+User -> UI: Add Expense (Repairs/Salaries)
+UI -> API: POST /api/finance/expenses
+API -> Service: recordExpense()
+Service -> DB: Update Master Balance (Debit)
+DB --> UI: Balance Sheet Updated
+User -> UI: View Balance Sheet (Total Income vs Expense)
+
+== 6. Directory & Export ==
+User -> UI: Search Resident Directory
+UI -> API: GET /api/flats/directory
+API -> DB: Fetch Joined Flat-User Data
+DB --> UI: Return List
+User -> UI: Click "Export Excel"
+UI -> API: GET /api/flats/export/excel
+API -> Libs: Apache POI: buildExcel()
+Libs --> UI: Return .xlsx file
+UI -> User: Download Directory.xlsx
+
+@enduml

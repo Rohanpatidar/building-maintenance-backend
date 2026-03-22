@@ -1,0 +1,64 @@
+@startuml
+title Use Case Diagram - Building Maintenance System
+
+left to right direction
+
+actor "Admin" as admin
+actor "Resident (User)" as user
+actor "System Scheduler" as robot << Automatic >>
+
+package "Building Maintenance System" {
+
+    '--- User Authentication ---
+    usecase "Login / Logout" as UC1
+    usecase "Manage User Accounts\n(Edit/Delete/Register)" as UC2
+
+    '--- Flat Management ---
+    usecase "Manage Flats\n(Add/Edit Flat Details)" as UC3
+    usecase "Assign Flat to Resident" as UC4
+    usecase "View Resident Directory" as UC5
+
+    '--- Financial Management ---
+    usecase "Manual Bill Generation\n(Occupied/Rented/Vacant)" as UC6
+    usecase "Toggle Auto-Billing Switch" as UC7
+    usecase "Automated Monthly Billing" as UC8
+    usecase "Pay Maintenance Bill" as UC9
+    usecase "View Master Balance Sheet\n(Transparency)" as UC10
+    usecase "Record Society Expenses" as UC11
+
+    '--- Reporting & Communication ---
+    usecase "Download PDF Receipt" as UC12
+    usecase "Export Directory to Excel" as UC13
+    usecase "Post Society Notices" as UC14
+    usecase "Raise/View Complaints" as UC15
+}
+
+'--- Admin Relationships ---
+admin --> UC1
+admin --> UC2
+admin --> UC3
+admin --> UC4
+admin --> UC6
+admin --> UC7
+admin --> UC10
+admin --> UC11
+admin --> UC13
+admin --> UC14
+admin --> UC15
+
+'--- User Relationships ---
+user --> UC1
+user --> UC5
+user --> UC9
+user --> UC10
+user --> UC12
+user --> UC15
+
+'--- Automated Robot Relationships ---
+robot --> UC8 : "Triggers 1st of Month"
+UC8 .> UC6 : "<<include>>"
+UC7 .> UC8 : "Controls"
+
+@enduml
+
+

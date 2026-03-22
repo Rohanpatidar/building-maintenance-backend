@@ -1,0 +1,105 @@
+@startuml
+title Full System Class Diagram - Building Maintenance ERP (Spring Boot)
+
+package "com.buildingmaintenancesystem.entity" {
+    class User {
+        - Long id
+        - String username
+        - String password
+        - String fullName
+        - String role
+        + getAuthorities()
+    }
+
+    class Flat {
+        - Long id
+        - String flatNumber
+        - String wing
+        - String floor
+        - String status
+        - String ownerName
+        + User owner
+    }
+
+    class MaintenanceBill {
+        - Long id
+        - String month
+        - Double amount
+        - String status
+        - LocalDateTime paymentDate
+        + User user
+        + Flat flat
+    }
+
+    class Expense {
+        - Long id
+        - String description
+        - Double amount
+        - LocalDate date
+        - String category
+    }
+
+    class SystemSettings {
+        - Long id
+        - boolean autoBillingEnabled
+        - Double defaultAmount
+    }
+}
+
+package "com.buildingmaintenancesystem.service" {
+    class FinancialService {
+        + generateBillsByStatus()
+        + processPayment()
+        + recordExpense()
+        + getBalanceSheet()
+    }
+
+    class FlatService {
+        + assignUserToFlat()
+        + getSocietyDirectory()
+    }
+
+    class PdfService {
+        + generateMaintenanceReceipt()
+    }
+
+    class ExcelExportService {
+        + exportResidentDirectory()
+    }
+
+    class AutoBillingScheduler <<Service>> {
+        - SettingsRepository settingsRepo
+        - FinancialService financialService
+        + runMonthlyBilling() <<Scheduled>>
+    }
+}
+
+package "com.buildingmaintenancesystem.controller" {
+    class AuthController {
+        + login()
+        + register()
+    }
+    class FlatController {
+        + addFlat()
+        + assignUser()
+        + exportToExcel()
+    }
+    class FinancialController {
+        + generateBills()
+        + payBill()
+        + downloadReceipt()
+        + toggleAutoBilling()
+    }
+}
+
+'--- Relationships ---
+User "1" *-- "many" Flat : owns
+User "1" *-- "many" MaintenanceBill : pays
+Flat "1" *-- "many" MaintenanceBill : has
+FinancialService --> FinancialController : injects
+FlatService --> FlatController : injects
+AutoBillingScheduler --> FinancialService : uses
+PdfService --|> FinancialController : used by
+ExcelExportService --|> FlatController : used by
+
+@enduml

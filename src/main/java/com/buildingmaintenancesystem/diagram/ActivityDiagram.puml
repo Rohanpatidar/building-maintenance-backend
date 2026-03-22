@@ -1,0 +1,88 @@
+
+
+@startuml
+title Comprehensive Activity Diagram - Building Maintenance System (Full Lifecycle)
+
+|#AliceBlue|Admin|
+|#GhostWhite|System (Backend/Robot)|
+|#Lavender|Resident (User)|
+
+|Admin|
+start
+:Login (Spring Security/JWT);
+fork
+    :Add/Edit Flat Details;
+    :Register New Resident;
+    :Assign Resident to Vacant Flat;
+    |System|
+    :Update Flat Status to "OCCUPIED";
+    :Map UserID to FlatID;
+fork again
+    |Admin|
+    :Manage Society Notices;
+    |System|
+    :Broadcast to Dashboard;
+end fork
+
+|Admin|
+:Set Default Maintenance Amount;
+if (Enable Auto-Billing Toggle?) then (Yes)
+    |System|
+    :Wait for 1st of Month (Cron Job);
+    :Automated Bill Generation (All Flats);
+else (No)
+    |Admin|
+    :Select Month & Category;
+    :Manual Bill Generation;
+    |System|
+    :Create Pending Bills;
+endif
+
+|Resident|
+:Login to Dashboard;
+:View Assigned Flat Info;
+:View Monthly Maintenance Bill;
+
+|Resident|
+fork
+    :Click "Pay Now";
+    |System|
+    :Process Payment;
+    :Set Status to "PAID";
+    :Add to Master Balance;
+    :Generate iText PDF Blob;
+    |Resident|
+    :Download PDF Receipt;
+fork again
+    :Open Resident Directory;
+    |System|
+    :Fetch All Users & Flat Mapping;
+    |Resident|
+    :Search Neighbors;
+fork again
+    :Raise Maintenance Complaint;
+    |System|
+    :Notify Admin;
+end fork
+
+|Admin|
+:Record Society Expenses\n(Repairs, Salaries, Water, etc.);
+|System|
+:Update Master Balance Sheet\n(Income - Expenses);
+:Deduct from Total Funds;
+
+|Resident|
+:Open Financial Transparency Tab;
+:View Real-time Balance Sheet;
+
+|Admin|
+:Export Full Directory (Apache POI);
+|System|
+:Download Excel (.xlsx);
+
+|Admin|
+:Logout;
+|Resident|
+:Logout;
+stop
+@enduml
