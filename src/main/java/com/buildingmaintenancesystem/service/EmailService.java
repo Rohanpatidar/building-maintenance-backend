@@ -22,6 +22,7 @@ public class EmailService {
     // 1. Send Simple Notification (For Notices & Bill Alerts)
     @Value("${spring.mail.username}")
     private String senderEmail;
+    @Async
     public void sendSimpleEmail(String to, String subject, String body) {
         try{
             SimpleMailMessage message = new SimpleMailMessage();
