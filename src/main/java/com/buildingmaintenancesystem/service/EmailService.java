@@ -18,7 +18,7 @@ public class EmailService {
     private final JavaMailSender mailSender;
 
     // 1. Send Simple Notification (For Notices & Bill Alerts)
-    @Async
+
     public void sendSimpleEmail(String to, String subject, String body) {
         try{
             SimpleMailMessage message = new SimpleMailMessage();
@@ -27,7 +27,7 @@ public class EmailService {
             message.setText(body);
             mailSender.send(message);
         }catch (Exception e){
-            System.out.println("Some Issue Generate With Email Service");
+            e.printStackTrace();
         }
 
     }
