@@ -3,7 +3,9 @@ package com.buildingmaintenancesystem.service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -18,10 +20,12 @@ public class EmailService {
     private final JavaMailSender mailSender;
 
     // 1. Send Simple Notification (For Notices & Bill Alerts)
-@Async
+    @Value("${spring.mail.username}")
+    private String senderEmail;
     public void sendSimpleEmail(String to, String subject, String body) {
         try{
             SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(senderEmail);
             message.setTo(to);
             message.setSubject(subject);
             message.setText(body);
@@ -38,7 +42,7 @@ public class EmailService {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
-
+            helper.setFrom(senderEmail);
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(body);
