@@ -1,7 +1,7 @@
 
 
 @startuml
-title Comprehensive Activity Diagram - Building Maintenance System (Full Lifecycle)
+title Comprehensive Activity Diagram - Building Maintenance Management System (Full Lifecycle)
 
 |#AliceBlue|Admin|
 |#GhostWhite|System (Backend/Robot)|

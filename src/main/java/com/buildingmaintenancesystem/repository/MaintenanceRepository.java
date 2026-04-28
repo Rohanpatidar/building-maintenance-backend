@@ -35,4 +35,7 @@ public interface MaintenanceRepository extends JpaRepository<MaintenanceBill, Lo
     @Transactional
     @Query("DELETE FROM MaintenanceBill m WHERE m.id = :id")
     void deleteByBillId(Long id);
+    @Query("SELECT SUM(b.amount) FROM MaintenanceBill b WHERE b.status = 'PAID'")
+    Double sumAllPaidBills();
+
 }

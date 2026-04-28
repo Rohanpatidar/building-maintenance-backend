@@ -1,5 +1,5 @@
 @startuml
-title Full System Class Diagram - Building Maintenance ERP (Spring Boot)
+title Full System Class Diagram - Building Maintenance Management ERP (Spring Boot)
 
 package "com.buildingmaintenancesystem.entity" {
     class User {

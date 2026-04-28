@@ -9,6 +9,8 @@ import com.buildingmaintenancesystem.repository.OtpRepository;
 import com.buildingmaintenancesystem.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -38,6 +40,20 @@ public class UserService {
         user.setRole(Role.ROLE_ADMIN);
         userRepository.save(user);
         return user.getFullName() + " is now an Admin!";
+    }
+    // UserService.java mein niche dalo
+    @Async
+    public void notifyAllResidents(String title, String content) {
+        List<User> residents = userRepository.findAll();
+        for (User user : residents) {
+            if (user.getEmail() != null && !user.getEmail().isEmpty()) {
+                emailService.sendSimpleEmail(
+                        user.getEmail(),
+                        "📢 Society Notice: " + title,
+                        content
+                );
+            }
+        }
     }
     public User registerUser(UserRegistrationRequest request) {
         // 1. Check if Username Exists
@@ -171,6 +187,9 @@ public class UserService {
 
         return "Password reset successful! You can now login.";
     }
-
+    @Scheduled(cron = "0 0 * * * *") // Har ghante chalega
+    public void cleanExpiredOtps() {
+        otpRepository.deleteByExpiryTimeBefore(LocalDateTime.now());
+    }
 
 }

@@ -32,16 +32,12 @@ public class UserController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody UserRegistrationRequest request) {
-        try {
-            User newUser = userService.registerUser(request);
-            return ResponseEntity.ok("User registered successfully! ID: " + newUser.getId());
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<?> register(@Valid  @RequestBody UserRegistrationRequest request) {
+        User newUser = userService.registerUser(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully!");
     }
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         // 1. Authenticate the User
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
@@ -79,8 +75,9 @@ public class UserController {
     }
     @GetMapping("/id/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
+    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long id) {
+        User user = userService.getUserById(id);
+        return ResponseEntity.ok(userMapper.toResponseDTO(user));
     }
     @GetMapping("/{username}")
     public ResponseEntity<UserResponseDTO> getUsersByUsername(@PathVariable String username) {

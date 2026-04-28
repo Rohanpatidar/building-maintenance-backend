@@ -46,7 +46,6 @@ public class SecurityConfig {
                     config.setAllowCredentials(true);
                     return config;
                 }))
-
                 .csrf(csrf -> csrf.disable())
 
                 .authorizeHttpRequests(auth -> auth
@@ -60,11 +59,8 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 

@@ -106,27 +106,40 @@ public class FinancialService {
     }
 // Add this method to FinancialService.java
 
+//    public Map<String, Object> getBalanceSheet() {
+//        // 1. Calculate Total Income (Sum of all PAID maintenance bills)
+//        Double totalIncome = maintenanceRepository.findAll().stream()
+//                .filter(bill -> bill.getStatus() == BillStatus.PAID)
+//                .mapToDouble(MaintenanceBill::getAmount)
+//                .sum();
+//
+//        // 2. Calculate Total Expenses
+//        Double totalExpenses = expenseRepository.findAll().stream()
+//                .mapToDouble(Expense::getAmount)
+//                .sum();
+//
+//        // 3. Prepare the Map
+//        Map<String, Object> report = new HashMap<>();
+//        report.put("totalIncome", totalIncome);
+//        report.put("totalExpenses", totalExpenses);
+//        report.put("balance", totalIncome - totalExpenses);
+//
+//        return report;
+//    }
+
     public Map<String, Object> getBalanceSheet() {
-        // 1. Calculate Total Income (Sum of all PAID maintenance bills)
-        Double totalIncome = maintenanceRepository.findAll().stream()
-                .filter(bill -> bill.getStatus() == BillStatus.PAID)
-                .mapToDouble(MaintenanceBill::getAmount)
-                .sum();
+        Double totalIncome = maintenanceRepository.sumAllPaidBills();
+        if (totalIncome == null) totalIncome = 0.0;
 
-        // 2. Calculate Total Expenses
-        Double totalExpenses = expenseRepository.findAll().stream()
-                .mapToDouble(Expense::getAmount)
-                .sum();
+        // Stream ko hato, DB se direct count lao
+        Double totalExpenses = expenseRepository.getTotalExpenseSum();
 
-        // 3. Prepare the Map
         Map<String, Object> report = new HashMap<>();
         report.put("totalIncome", totalIncome);
         report.put("totalExpenses", totalExpenses);
         report.put("balance", totalIncome - totalExpenses);
-
         return report;
     }
-
 
     // 3. Add Expense
     public Expense addExpense(Expense expense) {

@@ -39,20 +39,19 @@ public class DashboardController {
         long pendingCount = maintenanceRepository.countByStatus(BillStatus.PENDING);
         stats.put("pendingBills", pendingCount);
 
-        // 4. Total Income (Sum of PAID bills)
+
+
+
+
+
+
         Double totalIncome = maintenanceRepository.calculateTotalIncome();
+        if (totalIncome == null) totalIncome = 0.0;
 
-        // 5. Total Expenses (Sum of all Expenses)
-        Double totalExpense = expenseRepository.findAll().stream()
-                .mapToDouble(e -> e.getAmount())
-                .sum();
+        Double totalExpense = expenseRepository.getTotalExpenseSum(); // Humne Repo mein query likhi thi yaad hai?
+        if (totalExpense == null) totalExpense = 0.0;
 
-        // 6. Net Society Balance (Income - Expense)
         stats.put("societyBalance", totalIncome - totalExpense);
-
-        // (Optional) Just total income if you don't want to subtract expenses yet
-        stats.put("totalCollected", totalIncome);
-
         return ResponseEntity.ok(stats);
     }
 }

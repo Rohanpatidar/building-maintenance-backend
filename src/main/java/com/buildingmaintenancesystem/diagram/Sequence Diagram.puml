@@ -1,5 +1,5 @@
 @startuml
-title Full System Sequence Diagram - Building Maintenance ERP
+title Full System Sequence Diagram - Building Maintenance Management ERP
 
 actor "Admin/Resident" as User
 participant "React Frontend" as UI
