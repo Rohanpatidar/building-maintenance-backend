@@ -4,6 +4,7 @@ import com.buildingmaintenancesystem.dto.FlatRequest;
 import com.buildingmaintenancesystem.dto.FlatResponseDTO;
 import com.buildingmaintenancesystem.dto.SocietyMemberDTO;
 import com.buildingmaintenancesystem.entity.Flat;
+import com.buildingmaintenancesystem.entity.OccupancyStatus;
 import com.buildingmaintenancesystem.entity.User;
 import com.buildingmaintenancesystem.mapper.FlatMapper;
 import com.buildingmaintenancesystem.repository.ExpenseRepository;
@@ -82,6 +83,29 @@ public class FlatController {
     public ResponseEntity<String> deleteFlatById(@PathVariable Long id) {
         flatService.deleteFlat(id); // 👈 This actually performs the deletion
         return ResponseEntity.ok("Flat with ID " + id + " has been deleted successfully.");
+    }
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> updateFlatStatus(@PathVariable Long id, @RequestParam String status) {
+        try {
+            // 1. Flat dhundo
+            Flat flat = flatRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Flat not found with id: " + id));
+
+            // 2. String ko Enum mein convert karo (Case Insensitive handle karne ke liye)
+            OccupancyStatus newStatus = OccupancyStatus.valueOf(status.toUpperCase().trim());
+
+            // 3. Status set karo aur save karo
+            flat.setStatus(newStatus);
+            Flat updatedFlat = flatRepository.save(flat);
+
+            return ResponseEntity.ok(updatedFlat);
+        } catch (IllegalArgumentException e) {
+            // Agar status "XYZ" bhej diya jo Enum mein nahi hai
+            return ResponseEntity.badRequest().body("Invalid Status Value: " + status);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
     }
     @GetMapping("/my-flat")
     public ResponseEntity<?> getMyFlat(Principal principal) {

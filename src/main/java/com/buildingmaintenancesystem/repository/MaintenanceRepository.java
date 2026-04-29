@@ -38,4 +38,6 @@ public interface MaintenanceRepository extends JpaRepository<MaintenanceBill, Lo
     @Query("SELECT SUM(b.amount) FROM MaintenanceBill b WHERE b.status = 'PAID'")
     Double sumAllPaidBills();
 
+        boolean existsByFlatIdAndMonth(Long flatId, String month);
+    boolean existsByFlatIdAndMonthIgnoreCase(Long flatId, String month);
 }

@@ -22,15 +22,9 @@ public class FinancialService {
     @Autowired private PdfService pdfService;
     @Autowired private EmailService emailService;
 
-
-    // 1. Generate Bills
-    // Inside FinancialService.java
-
-    // Inside FinancialService.java
-
-
     public String generateBillsByStatus(BillGenerationRequest request, String statusFilter) {
         OccupancyStatus targetStatus = OccupancyStatus.valueOf(statusFilter.toUpperCase());
+
         List<Flat> targetFlats = flatRepository.findAll().stream()
                 .filter(f -> f.getStatus() == targetStatus && f.getOwner() != null)
                 .toList();
@@ -40,10 +34,13 @@ public class FinancialService {
         int count = 0;
         int skipped = 0;
 
+        // ✅ Yahan define kar diya variable taaki error na aaye
+        String billingMonth = request.getMonth().toUpperCase();
+
         for (Flat flat : targetFlats) {
-            boolean exists = maintenanceRepository.findAll().stream()
-                    .anyMatch(b -> b.getFlat().getId().equals(flat.getId()) &&
-                            b.getMonth().equalsIgnoreCase(request.getMonth()));
+            // ✅ Optimized Check: Database se direct pucho (Memory stream hata di)
+            boolean exists = maintenanceRepository.existsByFlatIdAndMonthIgnoreCase(flat.getId(), billingMonth);
+
             if (exists) {
                 skipped++;
                 continue;
@@ -51,7 +48,7 @@ public class FinancialService {
 
             MaintenanceBill bill = new MaintenanceBill();
             bill.setAmount(request.getAmount());
-            bill.setMonth(request.getMonth().toUpperCase());
+            bill.setMonth(billingMonth);
             bill.setGeneratedDate(LocalDate.now());
             bill.setStatus(BillStatus.PENDING);
             bill.setFlat(flat);
@@ -60,17 +57,17 @@ public class FinancialService {
             maintenanceRepository.save(bill);
             count++;
 
-            // 👈 2. Send Bill Generation Alert Email
+            // 👈 Emails enabled (As requested)
             if (flat.getOwner().getEmail() != null) {
-                String subject = "🔔 Maintenance Bill Generated - " + request.getMonth();
+                String subject = "🔔 Maintenance Bill Generated - " + billingMonth;
                 String body = "Dear " + flat.getOwner().getFullName() + ",\n\n" +
-                        "Your maintenance bill for " + request.getMonth() + " of amount ₹" + request.getAmount() +
+                        "Your maintenance bill for " + billingMonth + " of amount ₹" + request.getAmount() +
                         " has been generated. Please login to the portal to make the payment.\n\n" +
                         "Regards,\nSociety Management";
                 emailService.sendSimpleEmail(flat.getOwner().getEmail(), subject, body);
             }
         }
-        return "Generated: " + count + " bills. Emails sent.";
+        return "Generated: " + count + " bills. Skipped: " + skipped + " duplicates. Emails sent.";
     }
 
     public MaintenanceBill payBill(Long billId) {

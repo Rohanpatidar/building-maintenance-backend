@@ -39,9 +39,9 @@ public class SecurityConfig {
 
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-
                     config.setAllowedOriginPatterns(Arrays.asList("*"));
-                    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    // PATCH ko yahan add kiya 👇
+                    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                     config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
                     config.setAllowCredentials(true);
                     return config;
@@ -71,21 +71,16 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // 1. Allow your React Frontend URL
         configuration.setAllowedOrigins(List.of("http://localhost:5173"));
 
-        // 2. Allow specific HTTP methods
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // PATCH ko yahan bhi add kiya 👇
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
-        // 3. Allow Headers (Authorization is vital for JWT!)
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-
-        // 4. Allow Credentials (if needed)
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration); // Apply to ALL URLs
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 }
